@@ -346,7 +346,8 @@ MonoBehaviour:
   rainbowChangeSpeed: 0.001
   minLifetime: 1
   maxLifetime: 3
-  particleSpeed: 7
+  cg: {fileID: 1779317245}
+  particleSpeed: 0.01
 --- !u!114 &773552445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -387,7 +388,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9497cae3404c9a12393af4344d52053e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amountToPool: 200
+  amountToPool: 120
   pooledObject: {fileID: 8388393364198064386, guid: d4cdfeb64f9cef54e88a97406663697a,
     type: 3}
 --- !u!1 &1332868535
@@ -515,7 +516,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Press to spawn particles
+  m_text: 'Press to spawn particles!
 
     Try pressing with multiple fingers :)'
   m_isRightToLeft: 0

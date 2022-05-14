@@ -25,6 +25,8 @@ public class TouchScripts : MonoBehaviour
     public float maxLifetime;
 
     bool triggeredFade = false;
+    bool faded = false;
+    public CanvasGroup cg;
 
     [Space]
 
@@ -67,10 +69,24 @@ public class TouchScripts : MonoBehaviour
             }
         }
 
-        if (!triggeredFade && touchPositions.Count > 0)
+        // Start text fade
+        if (!faded)
         {
-
+            if (!triggeredFade && touchPositions.Count > 0)
+            {
+                triggeredFade = true;
+            }
+            if (triggeredFade)
+            {
+                cg.alpha = Mathf.Lerp(cg.alpha, 0f, 0.05f);
+                if (cg.alpha < 0.01f)
+                {
+                    cg.alpha = 0f;
+                    faded = true;
+                }
+            }
         }
+
 
         // Spawning timing
         time += Time.deltaTime;
@@ -90,7 +106,7 @@ public class TouchScripts : MonoBehaviour
             if (fingerCount > 0)
             {
                 Particle p = SpawnParticle(Random.Range(0, fingerCount));
-                p.rb.AddForce(new Vector2(Random.Range(-1f, 1f) * particleSpeed, Random.Range(-1f, 1f) * particleSpeed), ForceMode2D.Force);
+                p.rb.AddForce(new Vector2(Random.Range(-1f, 1f) * particleSpeed, Random.Range(-1f, 1f) * particleSpeed));
 
                 allParticles.Add(p);
             }
@@ -103,24 +119,24 @@ public class TouchScripts : MonoBehaviour
             if (p.gameObject.activeInHierarchy)
             {
                 // Physics
-                Rigidbody2D r = p.rb;
+                SimpleRigidbody rb = p.rb;
 
                 if (fingerCount == 1)
                 {
-                    r.AddForce((r.transform.position - touchPositions[0]).normalized * particleSpeed);
+                    rb.AddForce((rb.transform.position - touchPositions[0]).normalized * particleSpeed);
                 }
                 else if (fingerCount > 1)
                 {
                     int nextFinger = GetNextFinger(p.previousFinger);
-                    if (Vector2.Distance(r.transform.position, touchPositions[nextFinger]) < 0.5f)
+                    if (Vector2.Distance(rb.transform.position, touchPositions[nextFinger]) < 0.5f)
                     {
                         p.previousFinger = nextFinger;
                     }
 
-                    r.AddForce((touchPositions[nextFinger] - r.transform.position).normalized * particleSpeed);
+                    rb.AddForce((touchPositions[nextFinger] - rb.transform.position).normalized * particleSpeed);
                 }
 
-                Vector2 screenPoint = gameGamera.WorldToViewportPoint(r.transform.position);
+                Vector2 screenPoint = gameGamera.WorldToViewportPoint(rb.transform.position);
                 bool onScreen = screenPoint.x > 0 && screenPoint.x < 1 && screenPoint.y > 0 && screenPoint.y < 1;
 
                 // Removing
