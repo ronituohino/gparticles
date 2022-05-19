@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.12107873, a: 1}
+  m_IndirectSpecularColor: {r: 0.3708985, g: 0.3783704, b: 0.35722548, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -342,12 +342,14 @@ MonoBehaviour:
   gameGamera: {fileID: 719421779}
   pool: {fileID: 773552447}
   platform: {fileID: 773552445}
-  spawnRate: 30
+  spawnRate: 0.3
   rainbowChangeSpeed: 0.001
   minLifetime: 1
   maxLifetime: 3
   cg: {fileID: 1779317245}
   particleSpeed: 0.01
+  activeParticles: 
+  removedParticles: 
 --- !u!114 &773552445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -388,9 +390,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9497cae3404c9a12393af4344d52053e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amountToPool: 120
+  amountToPool: 200
   pooledObject: {fileID: 8388393364198064386, guid: d4cdfeb64f9cef54e88a97406663697a,
     type: 3}
+  ts: {fileID: 773552444}
 --- !u!1 &1332868535
 GameObject:
   m_ObjectHideFlags: 0

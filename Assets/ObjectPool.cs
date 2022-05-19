@@ -3,10 +3,13 @@ using System.Collections.Generic;
 
 public class ObjectPool : MonoBehaviour
 {
+    int idCounter = 0;
     public int amountToPool;
     public GameObject pooledObject;
 
-    public Queue<GameObject> inactive = new Queue<GameObject>();
+    public TouchScripts ts;
+
+    public Queue<Particle> inactive = new Queue<Particle>();
 
     void Awake()
     {
@@ -16,30 +19,39 @@ public class ObjectPool : MonoBehaviour
         }
     }
 
-    public GameObject NewParticle()
+    public Particle NewParticle()
     {
-        return Instantiate(pooledObject);
+        GameObject g = Instantiate(pooledObject);
+        Particle p = new Particle();
+        p.gameObject = g;
+
+        p.id = idCounter;
+        idCounter++;
+
+        p.spriteRenderer = g.GetComponent<SpriteRenderer>();
+
+        return p;
     }
 
-    public void Add(GameObject obj)
+    public void Add(Particle p)
     {
-        obj.SetActive(false);
-        inactive.Enqueue(obj);
+        p.gameObject.SetActive(false);
+        inactive.Enqueue(p);
     }
 
-    public GameObject Get()
+    public Particle Get()
     {
-        GameObject g = null;
+        Particle p;
         if (inactive.Count == 0)
         {
-            g = NewParticle();
+            p = NewParticle();
         }
         else
         {
-            g = inactive.Dequeue();
-            g.SetActive(true);
+            p = inactive.Dequeue();
+            p.gameObject.SetActive(true);
         }
 
-        return g;
+        return p;
     }
 }

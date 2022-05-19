@@ -11,7 +11,8 @@ public class TouchScripts : MonoBehaviour
     public PlatformDetection platform;
 
     // Particle amounts
-    public int spawnRate;
+    public float spawnRate;
+    float spawnTimer = 0f;
 
     [Space]
 
@@ -31,20 +32,20 @@ public class TouchScripts : MonoBehaviour
     [Space]
 
     public float particleSpeed;
+    public float particleDrag;
 
-    List<Particle> allParticles = new List<Particle>();
+    public Particle[] allParticles;
+    public List<int> activeParticles = new List<int>();
+    public List<int> removedParticles = new List<int>();
 
-    float time;
-    float spawnInterval;
 
     void Start()
     {
-        spawnInterval = 1f / spawnRate;
+        allParticles = pool.inactive.ToArray();
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        int currentAmount = pool.amountToPool - pool.inactive.Count;
         //Get touches
         fingerCount = Input.touchCount;
         Touch[] touches = Input.touches;
@@ -87,109 +88,85 @@ public class TouchScripts : MonoBehaviour
             }
         }
 
-
-        // Spawning timing
-        time += Time.deltaTime;
-        int amount = Mathf.FloorToInt(time / spawnInterval);
-        if (amount > 0)
-        {
-            time = 0f;
-        }
-        if (currentAmount + amount > pool.amountToPool)
-        {
-            amount = pool.amountToPool - currentAmount;
-        }
-
         // Spawning
-        for (int it = 0; it < amount; it++)
+        spawnTimer += spawnRate;
+        while (activeParticles.Count < allParticles.Length && spawnTimer > 1f)
         {
             if (fingerCount > 0)
             {
                 Particle p = SpawnParticle(Random.Range(0, fingerCount));
-                p.rb.AddForce(new Vector2(Random.Range(-1f, 1f) * particleSpeed, Random.Range(-1f, 1f) * particleSpeed));
-
-                allParticles.Add(p);
+                p.AddForce(new Vector2(Random.Range(-1f, 1f) * particleSpeed, Random.Range(-1f, 1f) * particleSpeed));
             }
+            spawnTimer -= 1f;
         }
 
 
         // Do physics and remove those whose lifetime is up
-        foreach (Particle p in allParticles)
+        removedParticles.Clear();
+        foreach (int id in activeParticles)
         {
-            if (p.gameObject.activeInHierarchy)
+            Particle p = allParticles[id];
+            Debug.Log(p);
+
+            // Physics
+            if (fingerCount == 1)
             {
-                // Physics
-                SimpleRigidbody rb = p.rb;
-
-                if (fingerCount == 1)
+                p.AddForce((p.gameObject.transform.position - touchPositions[0]).normalized * particleSpeed);
+            }
+            else if (fingerCount > 1)
+            {
+                int nextFinger = GetNextFinger(p.previousFinger);
+                if (Vector2.Distance(p.gameObject.transform.position, touchPositions[nextFinger]) < 0.5f)
                 {
-                    rb.AddForce((rb.transform.position - touchPositions[0]).normalized * particleSpeed);
-                }
-                else if (fingerCount > 1)
-                {
-                    int nextFinger = GetNextFinger(p.previousFinger);
-                    if (Vector2.Distance(rb.transform.position, touchPositions[nextFinger]) < 0.5f)
-                    {
-                        p.previousFinger = nextFinger;
-                    }
-
-                    rb.AddForce((touchPositions[nextFinger] - rb.transform.position).normalized * particleSpeed);
+                    p.previousFinger = nextFinger;
                 }
 
-                Vector2 screenPoint = gameGamera.WorldToViewportPoint(rb.transform.position);
-                bool onScreen = screenPoint.x > 0 && screenPoint.x < 1 && screenPoint.y > 0 && screenPoint.y < 1;
-
-                // Removing
-                if (!onScreen)
-                {
-                    p.expandedTime += Time.deltaTime;
-
-                    if (p.expandedTime > p.lifeTime)
-                    {
-                        pool.Add(p.gameObject);
-                    }
-                }
-                else
-                {
-                    p.expandedTime = 0f;
-                }
+                p.AddForce((touchPositions[nextFinger] - p.gameObject.transform.position).normalized * particleSpeed);
             }
 
+            Vector2 screenPoint = gameGamera.WorldToViewportPoint(p.gameObject.transform.position);
+            bool onScreen = screenPoint.x > 0 && screenPoint.x < 1 && screenPoint.y > 0 && screenPoint.y < 1;
+
+            // Removing
+            if (!onScreen)
+            {
+                p.expandedTime += Time.deltaTime;
+
+                if (p.expandedTime > p.lifeTime)
+                {
+                    pool.Add(p);
+                    removedParticles.Add(p.id);
+                }
+            }
+            else
+            {
+                p.expandedTime = 0f;
+            }
+            p.velocity -= p.velocity * p.drag;
+            p.gameObject.transform.position += p.velocity;
         }
 
-        currentAmount = allParticles.Count;
+        foreach (int i in removedParticles)
+        {
+            activeParticles.Remove(i);
+        }
     }
 
     Particle SpawnParticle(int finger)
     {
         // GameObject g = Instantiate(particle, touchPositions[finger], Quaternion.identity, transform) as GameObject;
-        GameObject g = pool.Get();
-        g.transform.position = touchPositions[finger];
+        Particle p = pool.Get();
 
-        Particle p = g.GetComponent<Particle>();
-        p.trailRenderer.Clear();
+        activeParticles.Add(p.id);
+
+        p.gameObject.transform.position = touchPositions[finger];
         p.expandedTime = 0f;
         p.lifeTime = Random.Range(minLifetime, maxLifetime);
         p.previousFinger = finger;
+        p.velocity = Vector3.zero;
+        p.drag = particleDrag;
 
         Color color = Color.HSVToRGB(hsv, 1f, 1f);
-        Gradient gradient = new Gradient();
-
-        GradientColorKey[] colorKeys = new GradientColorKey[2];
-        colorKeys[0].color = color;
-        colorKeys[0].time = 0.0f;
-        colorKeys[1].color = Color.black;
-        colorKeys[1].time = 1f;
-
-        GradientAlphaKey[] alphaKeys = new GradientAlphaKey[2];
-        alphaKeys[0].alpha = 1f;
-        alphaKeys[0].time = 0.0f;
-        alphaKeys[1].alpha = 0f;
-        alphaKeys[1].time = 1f;
-
-        gradient.SetKeys(colorKeys, alphaKeys);
-
-        p.trailRenderer.colorGradient = gradient;
         p.spriteRenderer.color = color;
 
         hsv += rainbowChangeSpeed;

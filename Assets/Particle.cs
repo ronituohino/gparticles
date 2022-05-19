@@ -1,11 +1,19 @@
 using UnityEngine;
 
-public class Particle : MonoBehaviour
+public struct Particle
 {
+    public int id;
+    public GameObject gameObject;
     public SpriteRenderer spriteRenderer;
-    public SimpleRigidbody rb;
-    public TrailRenderer trailRenderer;
     public float lifeTime;
     public float expandedTime;
     public int previousFinger;
+
+    public Vector3 velocity;
+    public float drag;
+
+    public void AddForce(Vector3 force)
+    {
+        velocity += force;
+    }
 }
