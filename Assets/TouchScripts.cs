@@ -12,7 +12,7 @@ public class TouchScripts : MonoBehaviour
 
     // Particle amounts
     public float spawnRate;
-    float spawnTimer = 0f;
+    float spawnTimer = 1f;
 
     [Space]
 
@@ -33,18 +33,13 @@ public class TouchScripts : MonoBehaviour
 
     public float particleSpeed;
     public float particleDrag;
+    public float particleMaxSpeed;
 
-    public Particle[] allParticles;
     public List<int> activeParticles = new List<int>();
     public List<int> removedParticles = new List<int>();
 
 
-    void Start()
-    {
-        allParticles = pool.inactive.ToArray();
-    }
-
-    void FixedUpdate()
+    void Update()
     {
         //Get touches
         fingerCount = Input.touchCount;
@@ -87,17 +82,17 @@ public class TouchScripts : MonoBehaviour
                 }
             }
         }
+    }
 
+    void FixedUpdate()
+    {
         // Spawning
         spawnTimer += spawnRate;
-        while (activeParticles.Count < allParticles.Length && spawnTimer > 1f)
+        if(activeParticles.Count < pool.particles.Count && spawnTimer > 1f && fingerCount > 0)
         {
-            if (fingerCount > 0)
-            {
-                Particle p = SpawnParticle(Random.Range(0, fingerCount));
-                p.AddForce(new Vector2(Random.Range(-1f, 1f) * particleSpeed, Random.Range(-1f, 1f) * particleSpeed));
-            }
-            spawnTimer -= 1f;
+            Particle p = SpawnParticle(Random.Range(0, fingerCount));
+            p.AddVelocity(new Vector3(Random.Range(-1f, 1f) * particleSpeed, Random.Range(-1f, 1f) * particleSpeed, 0f));
+            spawnTimer = 0f;
         }
 
 
@@ -105,13 +100,12 @@ public class TouchScripts : MonoBehaviour
         removedParticles.Clear();
         foreach (int id in activeParticles)
         {
-            Particle p = allParticles[id];
-            Debug.Log(p);
+            Particle p = pool.particles[id];
 
             // Physics
             if (fingerCount == 1)
             {
-                p.AddForce((p.gameObject.transform.position - touchPositions[0]).normalized * particleSpeed);
+                p.AddVelocity((p.gameObject.transform.position - touchPositions[0]).normalized * particleSpeed);
             }
             else if (fingerCount > 1)
             {
@@ -121,7 +115,7 @@ public class TouchScripts : MonoBehaviour
                     p.previousFinger = nextFinger;
                 }
 
-                p.AddForce((touchPositions[nextFinger] - p.gameObject.transform.position).normalized * particleSpeed);
+                p.AddVelocity((touchPositions[nextFinger] - p.gameObject.transform.position).normalized * particleSpeed);
             }
 
             Vector2 screenPoint = gameGamera.WorldToViewportPoint(p.gameObject.transform.position);
@@ -142,7 +136,8 @@ public class TouchScripts : MonoBehaviour
             {
                 p.expandedTime = 0f;
             }
-            p.velocity -= p.velocity * p.drag;
+
+            p.velocity *= particleDrag;
             p.gameObject.transform.position += p.velocity;
         }
 
@@ -164,11 +159,14 @@ public class TouchScripts : MonoBehaviour
         p.lifeTime = Random.Range(minLifetime, maxLifetime);
         p.previousFinger = finger;
         p.velocity = Vector3.zero;
-        p.drag = particleDrag;
+        p.maxVelocity = particleMaxSpeed;
 
         Color color = Color.HSVToRGB(hsv, 1f, 1f);
         p.spriteRenderer.color = color;
+        p.trailRenderer.startColor = color;
+        p.trailRenderer.endColor = color;
 
+        p.trailRenderer.Clear();
         hsv += rainbowChangeSpeed;
         if (hsv > 1f)
         {
@@ -189,5 +187,4 @@ public class TouchScripts : MonoBehaviour
             return finger + 1;
         }
     }
-
 }

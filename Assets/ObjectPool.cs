@@ -7,8 +7,7 @@ public class ObjectPool : MonoBehaviour
     public int amountToPool;
     public GameObject pooledObject;
 
-    public TouchScripts ts;
-
+    public List<Particle> particles = new List<Particle>();
     public Queue<Particle> inactive = new Queue<Particle>();
 
     void Awake()
@@ -29,7 +28,9 @@ public class ObjectPool : MonoBehaviour
         idCounter++;
 
         p.spriteRenderer = g.GetComponent<SpriteRenderer>();
+        p.trailRenderer = g.GetComponent<TrailRenderer>();
 
+        particles.Add(p);
         return p;
     }
 
