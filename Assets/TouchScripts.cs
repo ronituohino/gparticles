@@ -35,10 +35,6 @@ public class TouchScripts : MonoBehaviour
     public float particleDrag;
     public float particleMaxSpeed;
 
-    public List<int> activeParticles = new List<int>();
-    public List<int> removedParticles = new List<int>();
-
-
     void Update()
     {
         //Get touches
@@ -86,21 +82,16 @@ public class TouchScripts : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Spawning
-        spawnTimer += spawnRate;
-        if(activeParticles.Count < pool.particles.Count && spawnTimer > 1f && fingerCount > 0)
-        {
-            Particle p = SpawnParticle(Random.Range(0, fingerCount));
-            p.AddVelocity(new Vector3(Random.Range(-1f, 1f) * particleSpeed, Random.Range(-1f, 1f) * particleSpeed, 0f));
-            spawnTimer = 0f;
-        }
-
-
         // Do physics and remove those whose lifetime is up
-        removedParticles.Clear();
-        foreach (int id in activeParticles)
+        int activeParticleCount = 0;
+        for(int id = 0; id < pool.particles.Count; id++)
         {
             Particle p = pool.particles[id];
+            if(!p.active) 
+            {
+                continue;
+            }
+            activeParticleCount++;
 
             // Physics
             if (fingerCount == 1)
@@ -128,8 +119,8 @@ public class TouchScripts : MonoBehaviour
 
                 if (p.expandedTime > p.lifeTime)
                 {
+                    p.active = false;
                     pool.Add(p);
-                    removedParticles.Add(p.id);
                 }
             }
             else
@@ -141,9 +132,13 @@ public class TouchScripts : MonoBehaviour
             p.gameObject.transform.position += p.velocity;
         }
 
-        foreach (int i in removedParticles)
+        // Spawning
+        spawnTimer += spawnRate;
+        if(activeParticleCount < pool.particles.Count && spawnTimer > 1f && fingerCount > 0)
         {
-            activeParticles.Remove(i);
+            Particle p = SpawnParticle(Random.Range(0, fingerCount));
+            p.AddVelocity(new Vector3(Random.Range(-1f, 1f) * particleSpeed, Random.Range(-1f, 1f) * particleSpeed, 0f));
+            spawnTimer = 0f;
         }
     }
 
@@ -152,7 +147,7 @@ public class TouchScripts : MonoBehaviour
         // GameObject g = Instantiate(particle, touchPositions[finger], Quaternion.identity, transform) as GameObject;
         Particle p = pool.Get();
 
-        activeParticles.Add(p.id);
+        p.active = true;
 
         p.gameObject.transform.position = touchPositions[finger];
         p.expandedTime = 0f;

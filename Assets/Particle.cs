@@ -3,6 +3,7 @@ using UnityEngine;
 public class Particle
 {
     public int id;
+    public bool active;
     public GameObject gameObject;
     public SpriteRenderer spriteRenderer;
     public TrailRenderer trailRenderer;
