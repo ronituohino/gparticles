@@ -268,13 +268,13 @@ MonoBehaviour:
   pool: {fileID: 773552447}
   platform: {fileID: 773552445}
   spawnRate: 40
-  rainbowChangeSpeed: 0.002
+  rainbowChangeSpeed: 0.001
   minLifetime: 1
   maxLifetime: 3
   cg: {fileID: 1779317245}
-  particleSpeed: 0.005
+  particleSpeed: 0.0075
   particleDrag: 0.96
-  particleMaxSpeed: 0.1
+  particleMaxSpeed: 0.125
 --- !u!114 &773552445
 MonoBehaviour:
   m_ObjectHideFlags: 0
