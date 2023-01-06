@@ -12,7 +12,7 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: sielu_software
+  companyName: Tuohino
   productName: GParticles
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
@@ -155,7 +155,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.sielu_software.GParticles
+    Android: com.Tuohino.GParticles
   buildNumber:
     Standalone: 0
     iPhone: 0
@@ -249,7 +249,7 @@ PlayerSettings:
   AndroidTargetDevices: 0
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: /home/roni/Desktop/gparticles.keystore
+  AndroidKeystoreName: C:/Users/roni/Desktop/gparticles.keystore
   AndroidKeyaliasName: gparticles
   AndroidBuildApkPerCpuArchitecture: 0
   AndroidTVCompatibility: 0
