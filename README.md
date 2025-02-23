@@ -1,4 +1,5 @@
 ### GParticles
 
-A small artsy project available in the [Play Store](https://play.google.com/store/apps/details?id=com.Tuohino.GParticles)!
- 
+A small artsy project made in ~4h with the Unity engine!
+
+![Gameplay](./gparticles.mp4)
